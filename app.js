@@ -1,8 +1,10 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
+const path = require("path");
 const contactsRouter = require("./src/routes/api/contacts");
 const usersRouter = require("./src/routes/api/auth");
+
 require("dotenv").config();
 
 const mongoose = require("mongoose");
@@ -22,10 +24,12 @@ mongoose
 const app = express();
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
+const pathPublic = path.resolve("./src/public");
 
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+app.use(express.static(pathPublic));
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/users", usersRouter);
