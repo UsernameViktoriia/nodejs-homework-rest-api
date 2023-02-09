@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
 const {
   User,
   joiRegisterSchema,
@@ -19,6 +20,7 @@ const signup = async (req, res) => {
   if (user) {
     throw createError(409, "Email in use");
   }
+  const avatarUrl = gravatar.url(email);
   const newUser = new User({ name, email });
   newUser.setPassword(password);
   newUser.save();
@@ -26,6 +28,7 @@ const signup = async (req, res) => {
     user: {
       email,
       subscription: newUser.subscription,
+      avatarUrl,
     },
   });
 };
@@ -41,7 +44,7 @@ const login = async (req, res) => {
     throw createError(401, "Email or password is wrong");
   }
   const payload = { id: user._id };
-  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1h" });
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "6h" });
   await User.findByIdAndUpdate(user._id, { token });
   res.json({
     token: token,
