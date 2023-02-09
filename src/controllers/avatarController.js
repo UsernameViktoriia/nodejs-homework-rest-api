@@ -6,26 +6,29 @@ const Jimp = require("jimp");
 const avatarsDir = path.resolve("./src/public/avatars");
 
 const updateAvatar = async (req, res) => {
-  const { path: tempUpload, originalname } = req.file;
-  const { _id: id } = req.user;
-  const imageName = `${id}_${originalname}`;
   try {
-    const resultUpload = path.join(avatarsDir, imageName);
-    await Jimp.read(tempUpload, (err, image) => {
-      if (err) throw err;
-      image.resize(250, 250).write(resultUpload);
-      console.log(resultUpload);
-    });
-
-    await fs.rename(tempUpload, resultUpload);
-    const avatarUrl = path.join("avatars", imageName);
-    console.log(avatarUrl);
-    await User.findByIdAndUpdate(req.user._id, { avatarUrl });
-    res.json(avatarUrl);
+    const { _id: id } = req.user;
+    const { filename, path: tempPath } = req.file;
+    const extension = filename.split(".").reverse()[0];
+    const nameId = `${id}.${extension}`;
+    const newDir = path.join(avatarsDir, nameId);
+    const file = await Jimp.read(tempPath);
+    await file.resize(250, Jimp.AUTO);
+    await file.writeAsync(tempPath);
+    await fs.rename(tempPath, newDir);
+    const avatarURL = path.join("avatars", nameId);
+    const result = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatarURL },
+      { new: true }
+    );
+    res.status(201).json({ avatarURL: result.avatarURL });
   } catch (error) {
-    await fs.unlink(tempUpload);
+    if (error.message.includes("no such file or directory")) {
+      await fs.unlink(req.file.path);
+    }
     throw error;
   }
 };
 
-module.exports = updateAvatar;
+module.exports = { updateAvatar };
