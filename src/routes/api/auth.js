@@ -8,6 +8,8 @@ const {
   logout,
   getCurrent,
   updateSubscription,
+  verifyEmail,
+  resendVerifyEmail,
 } = require("../../controllers/authController");
 const { updateAvatar } = require("../../controllers/avatarController");
 
@@ -17,6 +19,8 @@ router.post("/signup", ctrlWrapper(signup));
 router.post("/login", ctrlWrapper(login));
 router.get("/logout", auth, ctrlWrapper(logout));
 router.get("/current", auth, ctrlWrapper(getCurrent));
+router.get("/verify/:verificationToken", ctrlWrapper(verifyEmail));
+router.post("/verify", ctrlWrapper(resendVerifyEmail));
 router.patch(
   "/avatars",
   auth,
